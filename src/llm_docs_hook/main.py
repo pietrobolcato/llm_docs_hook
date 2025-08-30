@@ -149,7 +149,7 @@ Examples:
         create_sample_config_file()
         print("Sample configuration created: .docstring_config.yaml")
         print(
-            "Edit this file to customize your settings, then set your LLM API key in .env"
+            "Edit this file to customize your settings, then set your LLM API key with LLM_DOCS_HOOK_ prefix in .env"
         )
         sys.exit(0)
 

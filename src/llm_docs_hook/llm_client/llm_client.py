@@ -25,7 +25,7 @@ class LLMDocstringGenerator:
         if not self.api_key:
             raise ValueError(
                 f"No API key found for provider '{config.llm.provider}'. "
-                f"Please set {config.llm.provider.upper()}_API_KEY environment variable."
+                f"Please set LLM_DOCS_HOOK_{config.llm.provider.upper()}_API_KEY environment variable."
             )
 
     def _generate_single_docstring(

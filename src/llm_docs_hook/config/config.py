@@ -271,12 +271,12 @@ class DocstringConfig:
         """
         provider = self.llm_provider.upper()
 
-        # Common API key environment variable names
+        # LLM_DOCS_HOOK_ prefixed API key environment variable names
         possible_keys = [
-            f"{provider}_API_KEY",
-            f"{provider}API_KEY",
-            "OPENAI_API_KEY",  # fallback for OpenAI-compatible providers
-            "API_KEY",
+            f"LLM_DOCS_HOOK_{provider}_API_KEY",
+            f"LLM_DOCS_HOOK_{provider}API_KEY",
+            "LLM_DOCS_HOOK_OPENAI_API_KEY",  # fallback for OpenAI-compatible providers
+            "LLM_DOCS_HOOK_API_KEY",
         ]
 
         for key in possible_keys:

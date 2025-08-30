@@ -1,0 +1,40 @@
+# Advanced configuration with custom requirements
+# This example shows how to customize docstring generation
+
+llm:
+  provider: "openai"
+  model: "openai/gpt-4o"  # Use a more powerful model
+  temperature: 0.0  # More deterministic output
+  max_tokens: 1500
+  custom_requirements: |
+    - Use clear, concise language suitable for both beginners and experts
+    - Include parameter units and valid ranges when applicable
+    - Add warnings for potential exceptions or edge cases
+    - Reference related functions or classes when helpful
+    - Follow the project's existing documentation style
+    - Include performance notes for computationally expensive operations
+
+docstring:
+  style: "google"
+  include_types: true
+  include_examples: true  # Include usage examples
+
+files:
+  include_patterns:
+    - "src/**/*.py"
+    - "lib/**/*.py"
+    - "app/**/*.py"
+  exclude_patterns:
+    - "**/test_*.py"
+    - "**/tests/**/*.py"
+    - "**/*_test.py"
+    - "**/conftest.py"
+    - "**/migrations/**"
+    - "**/vendor/**"
+
+processing:
+  parallel_count: 3  # Conservative setting for heavy model
+  skip_existing_docstrings: false  # Process all functions
+  update_incomplete_docstrings: true  # Update existing incomplete ones
+  backup_files: true  # Create backups for safety
+  verbose: true  # Detailed output

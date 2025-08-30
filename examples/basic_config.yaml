@@ -1,0 +1,20 @@
+# Basic configuration for llm-docs-hook
+# Copy this to .docstring_config.yaml in your project root
+
+llm:
+  provider: "openai"
+  model: "openai/gpt-4o-mini"
+  temperature: 0.1
+  max_tokens: 1000
+
+docstring:
+  style: "google"  # or "numpy"
+  include_types: true
+  include_examples: false
+
+processing:
+  parallel_count: 5  # Adjust based on your API rate limits
+  skip_existing_docstrings: true
+  update_incomplete_docstrings: false
+  backup_files: false
+  verbose: false

@@ -7,10 +7,12 @@ A pre-commit hook that automatically generates docstrings for Python functions a
 - **Automatic docstring generation** for Python functions and classes
 - **Multiple LLM providers** supported (OpenAI, Anthropic, Mistral, Google, Ollama, etc.)
 - **Multiple docstring styles** (Google-style and NumPy-style)
+- **Parallel processing** for faster generation when processing multiple functions
 - **Smart processing** - only processes new/modified functions and classes
 - **Configurable** via YAML configuration file
 - **Pre-commit integration** for seamless workflow
 - **Environment variable support** for API keys
+- **Dynamic indentation detection** - adapts to your project's style
 - **Backup and validation** to ensure code integrity
 
 ## Quick Start
@@ -32,9 +34,9 @@ cp env.example .env
 
 Example `.env` file:
 ```bash
-OPENAI_API_KEY=your_openai_api_key_here
+LLM_DOCS_HOOK_OPENAI_API_KEY=your_openai_api_key_here
 # or
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+LLM_DOCS_HOOK_ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
 
 ### 3. Create configuration (optional)
@@ -53,7 +55,7 @@ Add to your `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
-  - repo: https://github.com/yourusername/llm-docs-hook
+  - repo: https://github.com/pbolcato/llm-docs-hook
     rev: v0.1.0  # Use the latest version
     hooks:
       - id: llm-docs-hook
@@ -110,8 +112,10 @@ files:
 
 processing:
   skip_existing_docstrings: true
+  update_incomplete_docstrings: false
   backup_files: false
   verbose: false
+  parallel_count: 5  # Number of parallel LLM requests (1 for sequential)
 ```
 
 ### Supported LLM Providers
@@ -131,16 +135,16 @@ Set your API key based on your chosen provider:
 
 ```bash
 # OpenAI
-export OPENAI_API_KEY="your_key_here"
+export LLM_DOCS_HOOK_OPENAI_API_KEY="your_key_here"
 
 # Anthropic
-export ANTHROPIC_API_KEY="your_key_here"
+export LLM_DOCS_HOOK_ANTHROPIC_API_KEY="your_key_here"
 
 # Mistral
-export MISTRAL_API_KEY="your_key_here"
+export LLM_DOCS_HOOK_MISTRAL_API_KEY="your_key_here"
 
 # Google
-export GOOGLE_API_KEY="your_key_here"
+export LLM_DOCS_HOOK_GOOGLE_API_KEY="your_key_here"
 ```
 
 ## How It Works
@@ -220,6 +224,36 @@ llm-docs-hook --config my_config.yaml
 
 ## Advanced Usage
 
+### Parallel Processing
+
+For better performance when processing multiple functions, the tool supports parallel LLM requests:
+
+```yaml
+processing:
+  parallel_count: 5  # Process up to 5 functions simultaneously
+  # parallel_count: 1  # Sequential processing (slower but uses fewer API calls)
+  # parallel_count: 10 # More aggressive parallelization
+```
+
+- **Performance**: 5 functions can be processed ~5x faster than sequential
+- **API Limits**: Adjust based on your provider's rate limits
+- **Cost**: More parallel requests = higher API usage
+
+### Custom Requirements
+
+Customize the docstring generation with specific requirements:
+
+```yaml
+llm:
+  provider: "openai"
+  model: "openai/gpt-4o-mini"
+  custom_requirements: |
+    - Use clear, concise language
+    - Include parameter units when applicable
+    - Add warnings for potential exceptions
+    - Reference related functions when helpful
+```
+
 ### Custom Prompts
 
 The tool generates context-aware prompts based on your configuration and the code structure. The LLM receives:
@@ -229,6 +263,7 @@ The tool generates context-aware prompts based on your configuration and the cod
 - Parameter information
 - Return type annotations (if present)
 - Existing decorators
+- Custom requirements from configuration
 
 ### Integration with CI/CD
 
@@ -241,7 +276,7 @@ You can run the tool in CI/CD pipelines:
     pip install llm-docs-hook
     llm-docs-hook --files $(git diff --name-only HEAD~1 HEAD | grep '\.py$')
   env:
-    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    LLM_DOCS_HOOK_OPENAI_API_KEY: ${{ secrets.LLM_DOCS_HOOK_OPENAI_API_KEY }}
 ```
 
 ### Custom File Patterns
