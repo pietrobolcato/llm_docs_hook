@@ -1,0 +1,12 @@
+This function does something.
+
+Parameters
+----------
+param1 : str
+    Description of param1.
+
+Examples
+--------
+>>> result = my_function("test")
+>>> print(result)
+True

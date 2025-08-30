@@ -1,0 +1,15 @@
+This function does something.
+
+Parameters
+----------
+param1 : str
+    Description of param1.
+param2 : int
+    Description of param2.
+param3 : str, optional
+    Description of param3.
+
+Returns
+-------
+bool
+    Description of return value.

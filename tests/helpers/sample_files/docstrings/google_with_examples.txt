@@ -1,0 +1,9 @@
+This function does something.
+
+Args:
+    param1: Description of param1.
+
+Example:
+    >>> result = my_function("test")
+    >>> print(result)
+    True
