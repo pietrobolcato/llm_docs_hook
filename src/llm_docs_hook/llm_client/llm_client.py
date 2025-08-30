@@ -7,6 +7,7 @@ from any_llm import completion
 
 from src.llm_docs_hook.ast_parser.types import CodeElement
 from src.llm_docs_hook.config.types import Config
+from src.llm_docs_hook.llm_client.base_prompt import base_prompt
 
 
 class LLMDocstringGenerator:
@@ -82,32 +83,48 @@ class LLMDocstringGenerator:
             task_description = f"Generate a {style}-style docstring for the following Python {element.element_type}"
             existing_note = ""
 
-        base_prompt = f"""{task_description}:
+        formatted_base_prompt = base_prompt.format(
+            task_description=task_description,
+            context=context,
+            existing_note=existing_note,
+            requirements=self._get_requirements_text(style, include_types, include_examples),
+            element=element
+        )
 
-```python
-{context}
-```{existing_note}
+        return formatted_base_prompt
 
-Requirements:
-- Use {style.title()}-style docstring format
-- Be concise but comprehensive
-- Include proper descriptions for all parameters and return values
-"""
+    def _get_requirements_text(self, style: str, include_types: bool, include_examples: bool) -> str:
+        """Get the requirements text for docstring generation.
 
+        Args:
+            style (str): The docstring style (google/numpy).
+            include_types (bool): Whether to include type information.
+            include_examples (bool): Whether to include examples.
+
+        Returns:
+            str: Requirements text for the prompt.
+        """
+        # Always start with the style requirement (from config)
+        base_requirements = [f"- Use {style.title()}-style docstring format"]
+        
+        # Add custom requirements if provided, otherwise use defaults
+        if self.config.llm.custom_requirements:
+            base_requirements.append(self.config.llm.custom_requirements)
+        else:
+            # Default requirements
+            base_requirements.extend([
+                "- Be concise but comprehensive", 
+                "- Include proper descriptions for all parameters and return values"
+            ])
+        
+        # Add conditional requirements from config
         if include_types:
-            base_prompt += "- Include type information in the docstring\n"
+            base_requirements.append("- Include type information in the docstring")
         
         if include_examples:
-            base_prompt += "- Include a brief usage example if helpful\n"
-            
-        base_prompt += f"""
-- Only return the docstring content (without triple quotes)
-- The docstring should start immediately after the {element.element_type} definition
-- Follow Python documentation best practices
-
-Return only the docstring content, nothing else."""
-
-        return base_prompt
+            base_requirements.append("- Include a brief usage example if helpful")
+        
+        return "\n".join(base_requirements)
 
     def _extract_context(self, element: CodeElement, source_code: str) -> str:
         """Extract relevant context around a code element.
