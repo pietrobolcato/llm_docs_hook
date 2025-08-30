@@ -16,7 +16,8 @@ import yaml
 
 from src.llm_docs_hook.config.types import Config
 from src.llm_docs_hook.config.utils import load_config
-from tests.conftest import SAMPLE_CONFIG_MINIMAL, get_sample_config_yaml
+from tests.helpers.sample_configuration_data import SAMPLE_CONFIG_MINIMAL
+from tests.helpers.utils import get_sample_config_yaml
 
 
 class TestConfigTypes(unittest.TestCase):
