@@ -161,13 +161,13 @@ export GOOGLE_API_KEY="your_key_here"
 def calculate_fibonacci(n, memo=None):
     if memo is None:
         memo = {}
-    
+
     if n in memo:
         return memo[n]
-    
+
     if n <= 1:
         return n
-    
+
     memo[n] = calculate_fibonacci(n-1, memo) + calculate_fibonacci(n-2, memo)
     return memo[n]
 ```
@@ -177,24 +177,24 @@ def calculate_fibonacci(n, memo=None):
 ```python
 def calculate_fibonacci(n, memo=None):
     """Calculate the nth Fibonacci number using memoization.
-    
+
     Args:
         n (int): The position in the Fibonacci sequence to calculate.
-        memo (dict, optional): Memoization dictionary to store previously 
+        memo (dict, optional): Memoization dictionary to store previously
             calculated values. Defaults to None.
-    
+
     Returns:
         int: The nth Fibonacci number.
     """
     if memo is None:
         memo = {}
-    
+
     if n in memo:
         return memo[n]
-    
+
     if n <= 1:
         return n
-    
+
     memo[n] = calculate_fibonacci(n-1, memo) + calculate_fibonacci(n-2, memo)
     return memo[n]
 ```
@@ -311,4 +311,3 @@ This project is licensed under the Apache 2.0 License - see the LICENSE file for
 
 - [any-llm](https://github.com/mozilla-ai/any-llm) for the unified LLM interface
 - [pre-commit](https://pre-commit.com/) for the hooks framework
-

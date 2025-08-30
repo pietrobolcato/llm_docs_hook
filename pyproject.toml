@@ -90,6 +90,9 @@ ignore = [
     "E731",
     # Tryceratops
     "TRY003",
+    "C901",
+    "TRY300",
+    "SIM103"
 ]
 
 [tool.ruff.lint.per-file-ignores]

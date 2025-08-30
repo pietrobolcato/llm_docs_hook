@@ -1,8 +1,7 @@
 """LLM client for generating docstrings using any-llm."""
 
 import asyncio
-import os
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from any_llm import completion
 
@@ -22,14 +21,16 @@ class LLMDocstringGenerator:
         """
         self.config = config
         self.api_key = config.get_api_key()
-        
+
         if not self.api_key:
             raise ValueError(
                 f"No API key found for provider '{config.llm.provider}'. "
                 f"Please set {config.llm.provider.upper()}_API_KEY environment variable."
             )
 
-    def _generate_single_docstring(self, element: CodeElement, source_code: str) -> Optional[str]:
+    def _generate_single_docstring(
+        self, element: CodeElement, source_code: str
+    ) -> Optional[str]:
         """Generate a docstring for a single code element (internal helper).
 
         Args:
@@ -41,62 +42,56 @@ class LLMDocstringGenerator:
         """
         try:
             prompt = self._create_prompt(element, source_code)
-            
+
             response = completion(
                 model=self.config.llm.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=self.config.llm.temperature,
                 max_tokens=self.config.llm.max_tokens,
             )
-            
+
             if response and response.choices and len(response.choices) > 0:
                 generated_text = response.choices[0].message.content
                 return self._extract_docstring(generated_text)
-            
+
             return None
-            
+
         except Exception as error:
             print(f"Error generating docstring for {element.name}: {error}")
             return None
 
     async def generate_docstrings(
-        self, 
-        elements: List[CodeElement], 
-        source_code: str, 
-        max_parallel: int = 5
-    ) -> Dict[str, Optional[str]]:
+        self, elements: list[CodeElement], source_code: str, max_parallel: int = 5
+    ) -> dict[str, Optional[str]]:
         """Generate docstrings for one or more elements with configurable parallelism.
 
         Args:
-            elements (List[CodeElement]): List of code elements to generate docstrings for.
+            elements (list[CodeElement]): list of code elements to generate docstrings for.
             source_code (str): The full source code of the file for context.
             max_parallel (int): Maximum number of parallel requests. Defaults to 5.
 
         Returns:
-            Dict[str, Optional[str]]: Dictionary mapping element names to generated docstrings.
+            dict[str, Optional[str]]: Dictionary mapping element names to generated docstrings.
         """
         # Create a semaphore to limit concurrent requests (1 = sequential, >1 = parallel)
         semaphore = asyncio.Semaphore(max_parallel)
-        
-        async def generate_single(element: CodeElement) -> Tuple[str, Optional[str]]:
+
+        async def generate_single(element: CodeElement) -> tuple[str, Optional[str]]:
             """Generate docstring for a single element with semaphore control."""
             async with semaphore:
                 # Run the synchronous method in a thread pool
                 loop = asyncio.get_event_loop()
                 docstring = await loop.run_in_executor(
-                    None, 
-                    self._generate_single_docstring, 
-                    element, 
-                    source_code
+                    None, self._generate_single_docstring, element, source_code
                 )
                 return element.name, docstring
 
         # Create tasks for all elements
         tasks = [generate_single(element) for element in elements]
-        
+
         # Wait for all tasks to complete
         results_list = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Convert results to dictionary, handling exceptions
         results = {}
         for result in results_list:
@@ -105,7 +100,7 @@ class LLMDocstringGenerator:
                 continue
             element_name, docstring = result
             results[element_name] = docstring
-            
+
         return results
 
     def _create_prompt(self, element: CodeElement, source_code: str) -> str:
@@ -121,14 +116,14 @@ class LLMDocstringGenerator:
         style = self.config.docstring.style.lower()
         include_types = self.config.docstring.include_types
         include_examples = self.config.docstring.include_examples
-        
+
         # Extract relevant context around the function/class
         context = self._extract_context(element, source_code)
-        
+
         # Check if we're updating an existing docstring
         if element.has_docstring and element.is_incomplete_docstring:
             task_description = f"Update and improve the existing docstring for the following Python {element.element_type}"
-            existing_note = f"\nThe current docstring is incomplete and needs proper Args/Returns sections added."
+            existing_note = "\nThe current docstring is incomplete and needs proper Args/Returns sections added."
         else:
             task_description = f"Generate a {style}-style docstring for the following Python {element.element_type}"
             existing_note = ""
@@ -137,13 +132,17 @@ class LLMDocstringGenerator:
             task_description=task_description,
             context=context,
             existing_note=existing_note,
-            requirements=self._get_requirements_text(style, include_types, include_examples),
-            element=element
+            requirements=self._get_requirements_text(
+                style, include_types, include_examples
+            ),
+            element=element,
         )
 
         return formatted_base_prompt
 
-    def _get_requirements_text(self, style: str, include_types: bool, include_examples: bool) -> str:
+    def _get_requirements_text(
+        self, style: str, include_types: bool, include_examples: bool
+    ) -> str:
         """Get the requirements text for docstring generation.
 
         Args:
@@ -156,24 +155,24 @@ class LLMDocstringGenerator:
         """
         # Always start with the style requirement (from config)
         base_requirements = [f"- Use {style.title()}-style docstring format"]
-        
+
         # Add custom requirements if provided, otherwise use defaults
         if self.config.llm.custom_requirements:
             base_requirements.append(self.config.llm.custom_requirements)
         else:
             # Default requirements
             base_requirements.extend([
-                "- Be concise but comprehensive", 
-                "- Include proper descriptions for all parameters and return values"
+                "- Be concise but comprehensive",
+                "- Include proper descriptions for all parameters and return values",
             ])
-        
+
         # Add conditional requirements from config
         if include_types:
             base_requirements.append("- Include type information in the docstring")
-        
+
         if include_examples:
             base_requirements.append("- Include a brief usage example if helpful")
-        
+
         return "\n".join(base_requirements)
 
     def _extract_context(self, element: CodeElement, source_code: str) -> str:
@@ -188,19 +187,19 @@ class LLMDocstringGenerator:
         """
         lines = source_code.splitlines()
         start_line = max(0, element.line_number - 1)  # Convert to 0-based
-        
+
         # Include a few lines before for context (decorators, etc.)
         context_start = max(0, start_line - 3)
-        
+
         # Find the end of the function/class (look for next function/class or end of file)
         context_end = min(len(lines), element.end_line_number + 5)
-        
+
         # If we don't have end_line_number, estimate based on indentation
         if element.end_line_number == element.line_number:
             context_end = self._find_element_end(lines, start_line)
-        
+
         context_lines = lines[context_start:context_end]
-        return '\n'.join(context_lines)
+        return "\n".join(context_lines)
 
     def _find_element_end(self, lines: list[str], start_line: int) -> int:
         """Find the end of a function or class based on indentation.
@@ -214,11 +213,11 @@ class LLMDocstringGenerator:
         """
         if start_line >= len(lines):
             return len(lines)
-            
+
         # Get the indentation level of the definition line
         definition_line = lines[start_line]
         base_indent = len(definition_line) - len(definition_line.lstrip())
-        
+
         # Look for the next line with the same or lower indentation
         for index in range(start_line + 1, len(lines)):
             line = lines[index]
@@ -226,7 +225,7 @@ class LLMDocstringGenerator:
                 current_indent = len(line) - len(line.lstrip())
                 if current_indent <= base_indent:
                     return index
-        
+
         return len(lines)
 
     def _extract_docstring(self, generated_text: str) -> str:
@@ -240,20 +239,18 @@ class LLMDocstringGenerator:
         """
         # Remove any markdown code blocks
         text = generated_text.strip()
-        
+
         # Remove code block markers if present
-        if text.startswith('```'):
-            lines = text.split('\n')
+        if text.startswith("```"):
+            lines = text.split("\n")
             # Remove first and last lines if they're code block markers
-            if lines[0].startswith('```'):
+            if lines[0].startswith("```"):
                 lines = lines[1:]
-            if lines and lines[-1].strip() == '```':
+            if lines and lines[-1].strip() == "```":
                 lines = lines[:-1]
-            text = '\n'.join(lines)
-        
+            text = "\n".join(lines)
+
         # Remove any triple quotes that might have been included
-        text = text.strip('"""').strip("'''")
-        
+        text = text.replace('"""', "").replace("'''", "")
+
         return text.strip()
-
-

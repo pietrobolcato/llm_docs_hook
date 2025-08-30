@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import yaml
 from dotenv import load_dotenv
@@ -10,21 +10,37 @@ from dotenv import load_dotenv
 
 class DocstringConfig:
     """Configuration class for the docstring generation hook.
-    
+
     This class manages loading and providing access to configuration settings
-    from YAML files and environment variables.
+    from YAML files and environment variables. It allows users to customize
+    the behavior of the docstring generation process, including settings for
+    the language model, docstring style, file inclusion/exclusion patterns,
+    and processing options.
+
+    Attributes:
+        config_path (Optional[str]): Path to the configuration file.
+        config_data (dict[str, Any]): Loaded configuration data.
+
+    Args:
+        config_path (Optional[str]): Path to the configuration file. If not provided,
+    the class will search for default configuration files in the current
+    directory and its parents. Defaults to None.
+
+    Returns:
+        None: This constructor does not return a value. It initializes the instance
+    and loads the configuration data.
     """
 
     def __init__(self, config_path: Optional[str] = None):
         """Initialize the configuration.
 
         Args:
-            config_path (Optional[str]): Path to the configuration file. 
+            config_path (Optional[str]): Path to the configuration file.
                 Optional, defaults to None which will search for default config files.
         """
         self.config_path = config_path or self._find_config_file()
         self.config_data = self._load_config()
-        
+
         # Load environment variables
         load_dotenv()
 
@@ -35,22 +51,26 @@ class DocstringConfig:
             Optional[str]: Path to the configuration file if found, None otherwise.
         """
         current_directory = Path.cwd()
-        config_names = [".docstring_config.yaml", ".docstring_config.yml", "docstring_config.yaml"]
-        
+        config_names = [
+            ".docstring_config.yaml",
+            ".docstring_config.yml",
+            "docstring_config.yaml",
+        ]
+
         # Search current directory and parent directories
-        for directory in [current_directory] + list(current_directory.parents):
+        for directory in [current_directory, *current_directory.parents]:
             for config_name in config_names:
                 config_file = directory / config_name
                 if config_file.exists():
                     return str(config_file)
-        
+
         return None
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Load configuration from YAML file.
 
         Returns:
-            Dict[str, Any]: Configuration dictionary with default values.
+            dict[str, Any]: Configuration dictionary with default values.
         """
         default_config = {
             "llm": {
@@ -68,7 +88,7 @@ class DocstringConfig:
                 "include_patterns": ["**/*.py"],
                 "exclude_patterns": [
                     "**/test_*.py",
-                    "**/tests/**/*.py", 
+                    "**/tests/**/*.py",
                     "**/*_test.py",
                     "**/conftest.py",
                     "**/__pycache__/**",
@@ -82,42 +102,48 @@ class DocstringConfig:
                 "update_incomplete_docstrings": False,
                 "backup_files": False,
                 "verbose": False,
-            }
+            },
         }
-        
+
         if not self.config_path:
             return default_config
-            
+
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as file:
+            with open(self.config_path, encoding="utf-8") as file:
                 user_config = yaml.safe_load(file) or {}
-                
+
             # Merge user config with defaults
             merged_config = self._merge_configs(default_config, user_config)
             return merged_config
-            
+
         except (FileNotFoundError, yaml.YAMLError) as error:
             print(f"Warning: Could not load config file {self.config_path}: {error}")
             return default_config
 
-    def _merge_configs(self, default: Dict[str, Any], user: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_configs(
+        self, default: dict[str, Any], user: dict[str, Any]
+    ) -> dict[str, Any]:
         """Recursively merge user configuration with defaults.
 
         Args:
-            default (Dict[str, Any]): Default configuration dictionary.
-            user (Dict[str, Any]): User-provided configuration dictionary.
+            default (dict[str, Any]): Default configuration dictionary.
+            user (dict[str, Any]): User-provided configuration dictionary.
 
         Returns:
-            Dict[str, Any]: Merged configuration dictionary.
+            dict[str, Any]: Merged configuration dictionary.
         """
         merged = default.copy()
-        
+
         for key, value in user.items():
-            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            if (
+                key in merged
+                and isinstance(merged[key], dict)
+                and isinstance(value, dict)
+            ):
                 merged[key] = self._merge_configs(merged[key], value)
             else:
                 merged[key] = value
-                
+
         return merged
 
     @property
@@ -184,20 +210,20 @@ class DocstringConfig:
         return self.config_data["docstring"]["include_examples"]
 
     @property
-    def include_patterns(self) -> List[str]:
+    def include_patterns(self) -> list[str]:
         """Get file inclusion patterns.
 
         Returns:
-            List[str]: List of glob patterns for files to include.
+            list[str]: list of glob patterns for files to include.
         """
         return self.config_data["files"]["include_patterns"]
 
     @property
-    def exclude_patterns(self) -> List[str]:
+    def exclude_patterns(self) -> list[str]:
         """Get file exclusion patterns.
 
         Returns:
-            List[str]: List of glob patterns for files to exclude.
+            list[str]: list of glob patterns for files to exclude.
         """
         return self.config_data["files"]["exclude_patterns"]
 
@@ -244,7 +270,7 @@ class DocstringConfig:
             Optional[str]: The API key if found in environment variables, None otherwise.
         """
         provider = self.llm_provider.upper()
-        
+
         # Common API key environment variable names
         possible_keys = [
             f"{provider}_API_KEY",
@@ -252,20 +278,30 @@ class DocstringConfig:
             "OPENAI_API_KEY",  # fallback for OpenAI-compatible providers
             "API_KEY",
         ]
-        
+
         for key in possible_keys:
             api_key = os.getenv(key)
             if api_key:
                 return api_key
-                
+
         return None
 
     def create_sample_config(self, output_path: str = ".docstring_config.yaml") -> None:
-        """Create a sample configuration file.
+        """Create a sample configuration file for docstring generation.
+
+        This method generates a YAML configuration file that specifies settings
+        for a language model, docstring style, file inclusion/exclusion patterns,
+        and processing options. The generated file can be used to customize the
+        behavior of the docstring generation tool.
 
         Args:
-            output_path (str): Path where to create the sample config file. 
-                Optional, defaults to ".docstring_config.yaml".
+            output_path (str): The file path where the sample configuration
+        will be created. Defaults to ".docstring_config.yaml".
+
+        Returns:
+            None: This function does not return a value. It writes the
+        configuration to the specified file and prints a confirmation
+        message upon successful creation.
         """
         sample_config = {
             "llm": {
@@ -283,7 +319,7 @@ class DocstringConfig:
                 "include_patterns": ["**/*.py"],
                 "exclude_patterns": [
                     "**/test_*.py",
-                    "**/tests/**/*.py", 
+                    "**/tests/**/*.py",
                     "**/*_test.py",
                     "**/conftest.py",
                     "**/__pycache__/**",
@@ -297,10 +333,10 @@ class DocstringConfig:
                 "update_incomplete_docstrings": False,
                 "backup_files": False,
                 "verbose": False,
-            }
+            },
         }
-        
-        with open(output_path, 'w', encoding='utf-8') as file:
+
+        with open(output_path, "w", encoding="utf-8") as file:
             yaml.dump(sample_config, file, default_flow_style=False, indent=2)
-        
+
         print(f"Sample configuration created at: {output_path}")

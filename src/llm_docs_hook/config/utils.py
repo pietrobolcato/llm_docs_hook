@@ -3,10 +3,9 @@
 from pathlib import Path
 from typing import Optional
 
-from src.llm_docs_hook.config.types import Config
-
 import yaml
 
+from src.llm_docs_hook.config.types import Config
 
 
 def find_config_file() -> Optional[Path]:
@@ -16,15 +15,19 @@ def find_config_file() -> Optional[Path]:
         Optional[Path]: Path to the configuration file if found, None otherwise.
     """
     current_directory = Path.cwd()
-    config_names = [".docstring_config.yaml", ".docstring_config.yml", "docstring_config.yaml"]
-    
+    config_names = [
+        ".docstring_config.yaml",
+        ".docstring_config.yml",
+        "docstring_config.yaml",
+    ]
+
     # Search current directory and parent directories
-    for directory in [current_directory] + list(current_directory.parents):
+    for directory in [current_directory, *current_directory.parents]:
         for config_name in config_names:
             config_file = directory / config_name
             if config_file.exists():
                 return config_file
-    
+
     return None
 
 
@@ -32,7 +35,7 @@ def load_config(config_path: Optional[Path] = None) -> Config:
     """Load configuration from YAML file or return defaults.
 
     Args:
-        config_path (Optional[Path]): Path to the configuration file. 
+        config_path (Optional[Path]): Path to the configuration file.
             Optional, defaults to None which will search for default config files.
 
     Returns:
@@ -46,21 +49,21 @@ def load_config(config_path: Optional[Path] = None) -> Config:
     # Use provided path or find automatically
     if config_path is None:
         config_path = find_config_file()
-    
+
     # Return defaults if no config file found
     if config_path is None:
         return Config()
-    
+
     # Check if specified file exists
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    
+
     try:
-        with open(config_path, 'r', encoding='utf-8') as file:
+        with open(config_path, encoding="utf-8") as file:
             config_data = yaml.safe_load(file) or {}
-        
+
         return Config(**config_data)
-        
+
     except yaml.YAMLError as error:
         raise yaml.YAMLError(f"Error parsing YAML configuration: {error}") from error
 
@@ -68,28 +71,39 @@ def load_config(config_path: Optional[Path] = None) -> Config:
 def save_config(config: Config, config_path: Path) -> None:
     """Save configuration to a YAML file.
 
+    This function serializes the provided configuration object and writes it to a specified YAML file.
+    If the parent directory of the specified path does not exist, it will be created.
+
     Args:
-        config (Config): Configuration object to save.
-        config_path (Path): Path where to save the configuration.
+        config (Config): The configuration object to save, which should be serializable to a dictionary.
+        config_path (Path): The file path where the configuration will be saved. This should be a valid path
+    where the user has write permissions.
+
+    Returns:
+        None: This function does not return a value. It performs a file write operation.
     """
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    with open(config_path, 'w', encoding='utf-8') as file:
+
+    with open(config_path, "w", encoding="utf-8") as file:
         yaml.dump(
-            config.dict(),
-            file,
-            default_flow_style=False,
-            sort_keys=False,
-            indent=2
+            config.dict(), file, default_flow_style=False, sort_keys=False, indent=2
         )
 
 
 def create_sample_config(output_path: Path = Path(".docstring_config.yaml")) -> None:
     """Create a sample configuration file.
 
+    This function generates a sample configuration file at the specified output path.
+    If no path is provided, it defaults to creating a file named ".docstring_config.yaml"
+    in the current directory.
+
     Args:
-        output_path (Path): Path where to create the sample config file. 
-            Optional, defaults to Path(".docstring_config.yaml").
+        output_path (Path, optional): The file path where the sample configuration
+    file will be created. Defaults to Path(".docstring_config.yaml").
+
+    Returns:
+        None: This function does not return a value. It only creates a file and prints
+    a confirmation message to the console.
     """
     default_config = Config()
     save_config(default_config, output_path)

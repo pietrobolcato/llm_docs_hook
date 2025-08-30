@@ -78,11 +78,11 @@ class Rectangle:
 ```python
 def calculate_area(length, width):
     """Calculate the area of a rectangle.
-    
+
     Args:
         length (float): The length of the rectangle.
         width (float): The width of the rectangle.
-    
+
     Returns:
         float: The area of the rectangle.
     """
@@ -90,10 +90,10 @@ def calculate_area(length, width):
 
 class Rectangle:
     """A rectangle with length and width dimensions."""
-    
+
     def __init__(self, length, width):
         """Initialize a new Rectangle.
-        
+
         Args:
             length (float): The length of the rectangle.
             width (float): The width of the rectangle.

@@ -3,13 +3,11 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import List
+from typing import Optional
 
 from src.llm_docs_hook.ast_parser.ast_parser import PythonASTParser
-from src.llm_docs_hook.config.types import Config
 from src.llm_docs_hook.config.utils import create_sample_config, load_config
 from src.llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
-
 
 
 def create_sample_config_file() -> None:
@@ -17,11 +15,13 @@ def create_sample_config_file() -> None:
     create_sample_config()
 
 
-def process_files(file_paths: List[str], config_path: str = None, verbose: bool = False) -> int:
+def process_files(
+    file_paths: list[str], config_path: Optional[str] = None, verbose: bool = False
+) -> int:
     """Process files for docstring generation.
 
     Args:
-        file_paths (List[str]): List of Python file paths to process.
+        file_paths (list[str]): list of Python file paths to process.
         config_path (str): Path to configuration file. Optional, defaults to None.
         verbose (bool): Enable verbose output. Optional, defaults to False.
 
@@ -37,22 +37,22 @@ def process_files(file_paths: List[str], config_path: str = None, verbose: bool 
 
         # Initialize components
         ast_parser = PythonASTParser(
-            include_private=False, 
-            update_incomplete=config.processing.update_incomplete_docstrings
+            include_private=False,
+            update_incomplete=config.processing.update_incomplete_docstrings,
         )
         processor = DocstringProcessor(config)
-        
+
         total_files_modified = 0
         total_docstrings_added = 0
 
         for file_path_str in file_paths:
             file_path = Path(file_path_str)
-            
+
             if not file_path.exists():
                 print(f"Warning: File not found: {file_path}")
                 continue
-                
-            if not file_path.suffix == '.py':
+
+            if file_path.suffix != ".py":
                 if verbose:
                     print(f"Skipping non-Python file: {file_path}")
                 continue
@@ -60,19 +60,27 @@ def process_files(file_paths: List[str], config_path: str = None, verbose: bool 
             try:
                 # Parse file for functions/classes needing docstrings
                 elements = ast_parser.parse_file(file_path)
-                elements_needing_docs = [e for e in elements if not e.has_docstring or e.is_incomplete_docstring]
-                
+                elements_needing_docs = [
+                    e
+                    for e in elements
+                    if not e.has_docstring or e.is_incomplete_docstring
+                ]
+
                 if elements_needing_docs:
                     if verbose:
-                        print(f"Processing {file_path}: {len(elements_needing_docs)} elements need docstrings")
-                    
+                        print(
+                            f"Processing {file_path}: {len(elements_needing_docs)} elements need docstrings"
+                        )
+
                     # Process the file
-                    was_modified = processor.process_file(file_path, elements_needing_docs)
-                    
+                    was_modified = processor.process_file(
+                        file_path, elements_needing_docs
+                    )
+
                     if was_modified:
                         total_files_modified += 1
                         total_docstrings_added += len(elements_needing_docs)
-                        
+
                         # Validate syntax after modification
                         if not processor.validate_insertion(file_path):
                             print(f"Error: Syntax validation failed for {file_path}")
@@ -89,14 +97,15 @@ def process_files(file_paths: List[str], config_path: str = None, verbose: bool 
 
         # Summary
         if verbose or total_files_modified > 0:
-            print(f"Summary: Modified {total_files_modified} files, added {total_docstrings_added} docstrings")
+            print(
+                f"Summary: Modified {total_files_modified} files, added {total_docstrings_added} docstrings"
+            )
 
         return 0
 
     except Exception as error:
         print(f"Error: {error}")
         return 1
-
 
 
 def main() -> None:
@@ -117,30 +126,21 @@ Examples:
 
   # Run with verbose output
   llm-docs-hook --verbose file1.py
-        """
+        """,
+    )
+
+    parser.add_argument("files", nargs="*", help="Python files to process")
+
+    parser.add_argument("--config", help="Path to configuration file")
+
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output"
     )
 
     parser.add_argument(
-        'files',
-        nargs='*',
-        help='Python files to process'
-    )
-    
-    parser.add_argument(
-        '--config',
-        help='Path to configuration file'
-    )
-    
-    parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose output'
-    )
-    
-    parser.add_argument(
-        '--create-config',
-        action='store_true',
-        help='Create a sample configuration file and exit'
+        "--create-config",
+        action="store_true",
+        help="Create a sample configuration file and exit",
     )
 
     args = parser.parse_args()
@@ -148,17 +148,19 @@ Examples:
     if args.create_config:
         create_sample_config_file()
         print("Sample configuration created: .docstring_config.yaml")
-        print("Edit this file to customize your settings, then set your LLM API key in .env")
+        print(
+            "Edit this file to customize your settings, then set your LLM API key in .env"
+        )
         sys.exit(0)
 
     # Process files (passed as positional arguments)
     if not args.files:
         print("No files specified to process")
         sys.exit(0)
-    
+
     exit_code = process_files(args.files, args.config, args.verbose)
     sys.exit(exit_code)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
