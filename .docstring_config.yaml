@@ -1,0 +1,26 @@
+docstring:
+  include_examples: false
+  include_types: true
+  style: google
+files:
+  exclude_patterns:
+  - '**/test_*.py'
+  - '**/tests/**/*.py'
+  - '**/*_test.py'
+  - '**/conftest.py'
+  - '**/__pycache__/**'
+  - '**/venv/**'
+  - '**/env/**'
+  - '**/.venv/**'
+  include_patterns:
+  - '**/*.py'
+llm:
+  max_tokens: 1000
+  model: openai/gpt-4o-mini
+  provider: openai
+  temperature: 0.1
+processing:
+  backup_files: false
+  skip_existing_docstrings: true
+  update_incomplete_docstrings: true
+  verbose: true
