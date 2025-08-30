@@ -141,3 +141,5 @@ cython_debug/
 
 # Unsloth
 unsloth_compiled_cache/
+
+*.ignore*

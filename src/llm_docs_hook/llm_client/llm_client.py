@@ -5,26 +5,26 @@ from typing import Optional
 
 from any_llm import completion
 
-from .ast_parser import CodeElement
-from .config import DocstringConfig
+from src.llm_docs_hook.ast_parser.types import CodeElement
+from src.llm_docs_hook.config.types import Config
 
 
 class LLMDocstringGenerator:
     """Generates docstrings using LLM via any-llm library."""
 
-    def __init__(self, config: DocstringConfig):
+    def __init__(self, config: Config):
         """Initialize the LLM docstring generator.
 
         Args:
-            config (DocstringConfig): Configuration object containing LLM settings.
+            config (Config): Configuration object containing LLM settings.
         """
         self.config = config
         self.api_key = config.get_api_key()
         
         if not self.api_key:
             raise ValueError(
-                f"No API key found for provider '{config.llm_provider}'. "
-                f"Please set {config.llm_provider.upper()}_API_KEY environment variable."
+                f"No API key found for provider '{config.llm.provider}'. "
+                f"Please set {config.llm.provider.upper()}_API_KEY environment variable."
             )
 
     def generate_docstring(self, element: CodeElement, source_code: str) -> Optional[str]:
@@ -41,10 +41,10 @@ class LLMDocstringGenerator:
             prompt = self._create_prompt(element, source_code)
             
             response = completion(
-                model=self.config.llm_model,
+                model=self.config.llm.model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=self.config.llm_temperature,
-                max_tokens=self.config.llm_max_tokens,
+                temperature=self.config.llm.temperature,
+                max_tokens=self.config.llm.max_tokens,
             )
             
             if response and response.choices and len(response.choices) > 0:
@@ -67,9 +67,9 @@ class LLMDocstringGenerator:
         Returns:
             str: The formatted prompt string.
         """
-        style = self.config.docstring_style.lower()
-        include_types = self.config.include_types
-        include_examples = self.config.include_examples
+        style = self.config.docstring.style.lower()
+        include_types = self.config.docstring.include_types
+        include_examples = self.config.docstring.include_examples
         
         # Extract relevant context around the function/class
         context = self._extract_context(element, source_code)

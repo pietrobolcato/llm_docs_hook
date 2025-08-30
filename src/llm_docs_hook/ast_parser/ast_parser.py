@@ -1,48 +1,10 @@
 """AST parsing utilities for detecting functions and classes without docstrings."""
 
 import ast
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Set, Union
 
-
-@dataclass
-class CodeElement:
-    """Represents a code element (function or class) that needs documentation.
-    
-    Attributes:
-        name (str): The name of the function or class.
-        element_type (str): The type of element ('function' or 'class').
-        line_number (int): The line number where the element starts.
-        end_line_number (int): The line number where the element ends.
-        signature (str): The function/class signature.
-        has_docstring (bool): Whether the element already has a docstring.
-        is_private (bool): Whether the element is private (starts with _).
-        parent_class (Optional[str]): The parent class name if this is a method.
-        decorators (List[str]): List of decorator names applied to the element.
-        arguments (List[str]): List of argument names for functions.
-        return_annotation (Optional[str]): Return type annotation if present.
-    """
-    name: str
-    element_type: str  # 'function' or 'class'
-    line_number: int
-    end_line_number: int
-    signature: str
-    has_docstring: bool
-    docstring_content: Optional[str] = None
-    is_incomplete_docstring: bool = False
-    is_private: bool = False
-    parent_class: Optional[str] = None
-    decorators: List[str] = None
-    arguments: List[str] = None
-    return_annotation: Optional[str] = None
-
-    def __post_init__(self):
-        """Initialize default values for mutable attributes."""
-        if self.decorators is None:
-            self.decorators = []
-        if self.arguments is None:
-            self.arguments = []
+from src.llm_docs_hook.ast_parser.types import CodeElement, ElementType
 
 
 class PythonASTParser:
@@ -130,12 +92,13 @@ class PythonASTParser:
 
         # Determine element type
         if isinstance(node, ast.ClassDef):
-            element_type = 'class'
+            element_type = ElementType.CLASS
+
             # Track current class for nested functions
             old_class = self.current_class
             self.current_class = name
         else:
-            element_type = 'function'
+            element_type = ElementType.FUNCTION
 
         # Check if element has docstring and get its content
         has_docstring = self._has_docstring(node)
@@ -151,6 +114,7 @@ class PythonASTParser:
         # Get arguments and return annotation for functions
         arguments = []
         return_annotation = None
+
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             arguments = self._get_arguments(node)
             return_annotation = self._get_return_annotation(node)
@@ -165,7 +129,7 @@ class PythonASTParser:
             docstring_content=docstring_content,
             is_incomplete_docstring=is_incomplete_docstring,
             is_private=is_private,
-            parent_class=self.current_class if element_type == 'function' else None,
+            parent_class=self.current_class if element_type == ElementType.FUNCTION else None,
             decorators=decorators,
             arguments=arguments,
             return_annotation=return_annotation,
@@ -189,9 +153,11 @@ class PythonASTParser:
         # Include if no docstring at all
         if not element.has_docstring:
             pass  # Continue with other checks
+
         # Include if has incomplete docstring and we're updating incomplete ones
         elif element.is_incomplete_docstring and self.update_incomplete:
             pass  # Continue with other checks
+        
         # Skip if has complete docstring
         else:
             return False

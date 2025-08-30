@@ -4,19 +4,19 @@ import shutil
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from .ast_parser import CodeElement
-from .config import DocstringConfig
-from .llm_client import LLMDocstringGenerator
+from src.llm_docs_hook.ast_parser.types import CodeElement
+from src.llm_docs_hook.config.types import Config
+from src.llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
 
 
 class DocstringProcessor:
     """Processes Python files to add missing docstrings."""
 
-    def __init__(self, config: DocstringConfig):
+    def __init__(self, config: Config):
         """Initialize the docstring processor.
 
         Args:
-            config (DocstringConfig): Configuration object for processing settings.
+            config (Config): Configuration object for processing settings.
         """
         self.config = config
         self.llm_generator = LLMDocstringGenerator(config)
@@ -40,7 +40,7 @@ class DocstringProcessor:
                 original_content = file.read()
 
             # Create backup if configured
-            if self.config.backup_files:
+            if self.config.processing.backup_files:
                 self._create_backup(file_path)
 
             # Process elements in reverse order (by line number) to avoid offset issues
@@ -68,7 +68,7 @@ class DocstringProcessor:
                         
                     modifications_made = True
                     
-                    if self.config.verbose:
+                    if self.config.processing.verbose:
                         print(f"{action} docstring for {element.element_type} '{element.name}' in {file_path}")
                 else:
                     print(f"Warning: Could not generate docstring for {element.element_type} '{element.name}' in {file_path}")
@@ -78,7 +78,7 @@ class DocstringProcessor:
                 with open(file_path, 'w', encoding='utf-8') as file:
                     file.write(modified_content)
                 
-                if self.config.verbose:
+                if self.config.processing.verbose:
                     print(f"Updated file: {file_path}")
 
             return modifications_made
@@ -96,7 +96,7 @@ class DocstringProcessor:
         backup_path = file_path.with_suffix(f"{file_path.suffix}.backup")
         try:
             shutil.copy2(file_path, backup_path)
-            if self.config.verbose:
+            if self.config.processing.verbose:
                 print(f"Created backup: {backup_path}")
         except Exception as error:
             print(f"Warning: Could not create backup for {file_path}: {error}")
@@ -343,7 +343,7 @@ class DocstringProcessor:
             if backup_path.exists():
                 try:
                     backup_path.unlink()
-                    if self.config.verbose:
+                    if self.config.processing.verbose:
                         print(f"Cleaned up backup: {backup_path}")
                 except Exception as error:
                     print(f"Warning: Could not clean up backup {backup_path}: {error}")

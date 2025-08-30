@@ -5,16 +5,16 @@ import sys
 from pathlib import Path
 from typing import List
 
-from .ast_parser import PythonASTParser
-from .config import DocstringConfig
-from .docstring_processor import DocstringProcessor
-from .git_utils import GitModificationDetector
+from src.llm_docs_hook.ast_parser.ast_parser import PythonASTParser
+from src.llm_docs_hook.config.types import Config
+from src.llm_docs_hook.config.utils import create_sample_config, load_config
+from src.llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
+from src.llm_docs_hook.git_utils import GitModificationDetector
 
 
-def create_sample_config() -> None:
+def create_sample_config_file() -> None:
     """Create a sample configuration file in the current directory."""
-    config = DocstringConfig()
-    config.create_sample_config()
+    create_sample_config()
 
 
 def process_files(file_paths: List[str], config_path: str = None, verbose: bool = False) -> int:
@@ -30,14 +30,15 @@ def process_files(file_paths: List[str], config_path: str = None, verbose: bool 
     """
     try:
         # Load configuration
-        config = DocstringConfig(config_path)
+        config_file_path = Path(config_path) if config_path else None
+        config = load_config(config_file_path)
         if verbose:
-            config.config_data["processing"]["verbose"] = True
+            config.processing.verbose = True
 
         # Initialize components
         ast_parser = PythonASTParser(
             include_private=False, 
-            update_incomplete=config.update_incomplete_docstrings
+            update_incomplete=config.processing.update_incomplete_docstrings
         )
         processor = DocstringProcessor(config)
         
@@ -109,15 +110,16 @@ def run_pre_commit_hook(config_path: str = None, verbose: bool = False) -> int:
     """
     try:
         # Load configuration
-        config = DocstringConfig(config_path)
+        config_file_path = Path(config_path) if config_path else None
+        config = load_config(config_file_path)
         if verbose:
-            config.config_data["processing"]["verbose"] = True
+            config.processing.verbose = True
 
         # Initialize components
         git_detector = GitModificationDetector()
         ast_parser = PythonASTParser(
             include_private=False,
-            update_incomplete=config.update_incomplete_docstrings
+            update_incomplete=config.processing.update_incomplete_docstrings
         )
         processor = DocstringProcessor(config)
 
@@ -231,7 +233,7 @@ Examples:
     args = parser.parse_args()
 
     if args.create_config:
-        create_sample_config()
+        create_sample_config_file()
         print("Sample configuration created: .docstring_config.yaml")
         print("Edit this file to customize your settings, then set your LLM API key in .env")
         sys.exit(0)
