@@ -14,8 +14,8 @@ from unittest.mock import mock_open, patch
 
 import yaml
 
-from src.llm_docs_hook.config.types import Config
-from src.llm_docs_hook.config.utils import load_config
+from llm_docs_hook.config.types import Config
+from llm_docs_hook.config.utils import load_config
 from tests.helpers.sample_configuration_data import SAMPLE_CONFIG_MINIMAL
 from tests.helpers.utils import get_sample_config_yaml
 
@@ -141,7 +141,7 @@ class TestConfigTypes(unittest.TestCase):
 class TestConfigUtils(unittest.TestCase):
     """Test the configuration utility functions."""
 
-    @patch("src.llm_docs_hook.config.utils.find_config_file")
+    @patch("llm_docs_hook.config.utils.find_config_file")
     def test_load_config_with_defaults_when_no_file(
         self, mock_find_config: unittest.mock.MagicMock
     ) -> None:
@@ -214,7 +214,7 @@ class TestConfigUtils(unittest.TestCase):
             with self.assertRaises(yaml.YAMLError):
                 load_config(Path("/fake/invalid.yaml"))
 
-    @patch("src.llm_docs_hook.config.utils.find_config_file")
+    @patch("llm_docs_hook.config.utils.find_config_file")
     def test_find_config_file_search_pattern(
         self, mock_find_config: unittest.mock.MagicMock
     ) -> None:

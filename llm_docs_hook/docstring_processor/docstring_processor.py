@@ -5,10 +5,10 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-from src.llm_docs_hook.ast_parser.types import CodeElement
-from src.llm_docs_hook.config.types import Config
-from src.llm_docs_hook.docstring_processor.formatters import get_formatter
-from src.llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
+from llm_docs_hook.ast_parser.types import CodeElement
+from llm_docs_hook.config.types import Config
+from llm_docs_hook.docstring_processor.formatters import get_formatter
+from llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
 
 
 class DocstringProcessor:

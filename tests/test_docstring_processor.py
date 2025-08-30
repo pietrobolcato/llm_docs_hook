@@ -12,9 +12,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
-from src.llm_docs_hook.ast_parser.types import CodeElement, ElementType
-from src.llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
-from src.llm_docs_hook.docstring_processor.formatters import (
+from llm_docs_hook.ast_parser.types import CodeElement, ElementType
+from llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
+from llm_docs_hook.docstring_processor.formatters import (
     GoogleFormatter,
     NumpyFormatter,
 )

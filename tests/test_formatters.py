@@ -10,12 +10,12 @@ This module contains unit tests for the docstring formatters, focusing on:
 
 import unittest
 
-from src.llm_docs_hook.docstring_processor.formatters import (
+from llm_docs_hook.docstring_processor.formatters import (
     GoogleFormatter,
     NumpyFormatter,
     get_formatter,
 )
-from src.llm_docs_hook.docstring_processor.types import DocstringStyle
+from llm_docs_hook.docstring_processor.types import DocstringStyle
 
 
 class TestGoogleFormatter(unittest.TestCase):

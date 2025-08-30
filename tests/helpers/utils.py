@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import yaml
 
-from src.llm_docs_hook.ast_parser.types import CodeElement, ElementType
+from llm_docs_hook.ast_parser.types import CodeElement, ElementType
 
 
 def create_temp_config_file(config_data: dict[str, Any], suffix: str = ".yaml") -> Path:

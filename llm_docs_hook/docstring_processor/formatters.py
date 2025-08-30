@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from src.llm_docs_hook.docstring_processor.types import DocstringStyle
+from llm_docs_hook.docstring_processor.types import DocstringStyle
 
 
 class DocstringFormatter(ABC):

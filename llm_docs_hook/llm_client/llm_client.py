@@ -5,9 +5,9 @@ from typing import Optional
 
 from any_llm import completion
 
-from src.llm_docs_hook.ast_parser.types import CodeElement
-from src.llm_docs_hook.config.types import Config
-from src.llm_docs_hook.llm_client.base_prompt import base_prompt
+from llm_docs_hook.ast_parser.types import CodeElement
+from llm_docs_hook.config.types import Config
+from llm_docs_hook.llm_client.base_prompt import base_prompt
 
 
 class LLMDocstringGenerator:

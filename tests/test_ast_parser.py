@@ -11,8 +11,8 @@ This module contains unit tests for the Python AST parser, focusing on:
 import unittest
 from unittest.mock import mock_open, patch
 
-from src.llm_docs_hook.ast_parser.ast_parser import PythonASTParser
-from src.llm_docs_hook.ast_parser.types import ElementType
+from llm_docs_hook.ast_parser.ast_parser import PythonASTParser
+from llm_docs_hook.ast_parser.types import ElementType
 
 
 class TestPythonASTParser(unittest.TestCase):

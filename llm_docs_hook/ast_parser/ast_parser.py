@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 from typing import Optional, Union
 
-from src.llm_docs_hook.ast_parser.types import CodeElement, ElementType
+from llm_docs_hook.ast_parser.types import CodeElement, ElementType
 
 
 class PythonASTParser:

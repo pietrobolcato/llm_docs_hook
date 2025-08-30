@@ -5,9 +5,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from src.llm_docs_hook.ast_parser.ast_parser import PythonASTParser
-from src.llm_docs_hook.config.utils import create_sample_config, load_config
-from src.llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
+from llm_docs_hook.ast_parser.ast_parser import PythonASTParser
+from llm_docs_hook.config.utils import create_sample_config, load_config
+from llm_docs_hook.docstring_processor.docstring_processor import DocstringProcessor
 
 
 def create_sample_config_file() -> None:

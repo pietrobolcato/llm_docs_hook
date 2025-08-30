@@ -10,8 +10,8 @@ This module contains unit tests for the LLM docstring generator, focusing on:
 import unittest
 from unittest.mock import MagicMock, patch
 
-from src.llm_docs_hook.ast_parser.types import CodeElement
-from src.llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
+from llm_docs_hook.ast_parser.types import CodeElement
+from llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
 
 
 class TestLLMDocstringGenerator(unittest.TestCase):
@@ -147,7 +147,7 @@ class TestLLMDocstringGenerator(unittest.TestCase):
         self.assertIn("def simple_func():", context)
         self.assertIn("return True", context)
 
-    @patch("src.llm_docs_hook.llm_client.llm_client.completion")
+    @patch("llm_docs_hook.llm_client.llm_client.completion")
     def test_generate_single_docstring_success(
         self, mock_completion: MagicMock
     ) -> None:
@@ -177,7 +177,7 @@ class TestLLMDocstringGenerator(unittest.TestCase):
         self.assertEqual(result, "This is a generated docstring.")
         mock_completion.assert_called_once()
 
-    @patch("src.llm_docs_hook.llm_client.llm_client.completion")
+    @patch("llm_docs_hook.llm_client.llm_client.completion")
     def test_generate_single_docstring_api_error(
         self, mock_completion: MagicMock
     ) -> None:

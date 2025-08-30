@@ -26,7 +26,7 @@ repos:
   #   hooks:
   #     - id: llm-docs-hook
   #       name: Generate docstrings with LLM
-  #       entry: .venv/bin/python -m src.llm_docs_hook.main
+  #       entry: .venv/bin/python -m llm_docs_hook.main
   #       language: system
   #       files: \.py$
   #       require_serial: true

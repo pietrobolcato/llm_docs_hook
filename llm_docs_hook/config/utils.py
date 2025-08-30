@@ -5,7 +5,7 @@ from typing import Optional
 
 import yaml
 
-from src.llm_docs_hook.config.types import Config
+from llm_docs_hook.config.types import Config
 
 
 def find_config_file() -> Optional[Path]:
