@@ -1,5 +1,6 @@
 """Docstring processor for inserting generated docstrings into Python files."""
 
+import asyncio
 import shutil
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -7,7 +8,7 @@ from typing import List, Optional, Tuple
 from src.llm_docs_hook.ast_parser.types import CodeElement
 from src.llm_docs_hook.config.types import Config
 from src.llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
-from .formatters import get_formatter
+from src.llm_docs_hook.docstring_processor.formatters import get_formatter
 
 
 class DocstringProcessor:
@@ -44,6 +45,15 @@ class DocstringProcessor:
             if self.config.processing.backup_files:
                 self._create_backup(file_path)
 
+            # Generate docstrings (parallel_count controls concurrency: 1=sequential, >1=parallel)
+            docstring_results = asyncio.run(
+                self.llm_generator.generate_docstrings(
+                    elements, 
+                    original_content, 
+                    self.config.processing.parallel_count
+                )
+            )
+
             # Process elements in reverse order (by line number) to avoid offset issues
             elements_sorted = sorted(elements, key=lambda x: x.line_number, reverse=True)
             
@@ -51,7 +61,7 @@ class DocstringProcessor:
             modifications_made = False
 
             for element in elements_sorted:
-                docstring = self.llm_generator.generate_docstring(element, original_content)
+                docstring = docstring_results.get(element.name)
                 
                 if docstring:
                     if element.has_docstring and element.is_incomplete_docstring:

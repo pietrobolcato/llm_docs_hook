@@ -116,6 +116,12 @@ class ProcessingConfig(BaseModel):
         default=False,
         description="Enable verbose output"
     )
+    parallel_count: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Number of parallel LLM requests (1 for sequential processing)"
+    )
 
 
 class Config(BaseModel):

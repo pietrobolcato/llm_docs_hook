@@ -29,4 +29,5 @@ processing:
   skip_existing_docstrings: true
   update_incomplete_docstrings: true
   backup_files: false
+  parallel_count: 5
   verbose: true

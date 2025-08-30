@@ -1,7 +1,8 @@
 """LLM client for generating docstrings using any-llm."""
 
+import asyncio
 import os
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 
 from any_llm import completion
 
@@ -28,8 +29,8 @@ class LLMDocstringGenerator:
                 f"Please set {config.llm.provider.upper()}_API_KEY environment variable."
             )
 
-    def generate_docstring(self, element: CodeElement, source_code: str) -> Optional[str]:
-        """Generate a docstring for a code element.
+    def _generate_single_docstring(self, element: CodeElement, source_code: str) -> Optional[str]:
+        """Generate a docstring for a single code element (internal helper).
 
         Args:
             element (CodeElement): The code element to generate a docstring for.
@@ -57,6 +58,55 @@ class LLMDocstringGenerator:
         except Exception as error:
             print(f"Error generating docstring for {element.name}: {error}")
             return None
+
+    async def generate_docstrings(
+        self, 
+        elements: List[CodeElement], 
+        source_code: str, 
+        max_parallel: int = 5
+    ) -> Dict[str, Optional[str]]:
+        """Generate docstrings for one or more elements with configurable parallelism.
+
+        Args:
+            elements (List[CodeElement]): List of code elements to generate docstrings for.
+            source_code (str): The full source code of the file for context.
+            max_parallel (int): Maximum number of parallel requests. Defaults to 5.
+
+        Returns:
+            Dict[str, Optional[str]]: Dictionary mapping element names to generated docstrings.
+        """
+        # Create a semaphore to limit concurrent requests (1 = sequential, >1 = parallel)
+        semaphore = asyncio.Semaphore(max_parallel)
+        
+        async def generate_single(element: CodeElement) -> Tuple[str, Optional[str]]:
+            """Generate docstring for a single element with semaphore control."""
+            async with semaphore:
+                # Run the synchronous method in a thread pool
+                loop = asyncio.get_event_loop()
+                docstring = await loop.run_in_executor(
+                    None, 
+                    self._generate_single_docstring, 
+                    element, 
+                    source_code
+                )
+                return element.name, docstring
+
+        # Create tasks for all elements
+        tasks = [generate_single(element) for element in elements]
+        
+        # Wait for all tasks to complete
+        results_list = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Convert results to dictionary, handling exceptions
+        results = {}
+        for result in results_list:
+            if isinstance(result, Exception):
+                print(f"Error in parallel processing: {result}")
+                continue
+            element_name, docstring = result
+            results[element_name] = docstring
+            
+        return results
 
     def _create_prompt(self, element: CodeElement, source_code: str) -> str:
         """Create a prompt for the LLM to generate a docstring.
@@ -206,32 +256,4 @@ class LLMDocstringGenerator:
         
         return text.strip()
 
-    def _format_docstring(self, docstring: str, indent_level: int = 4) -> str:
-        """Format a docstring with proper indentation and quotes.
 
-        Args:
-            docstring (str): The raw docstring content.
-            indent_level (int): Number of spaces to indent. Optional, defaults to 4.
-
-        Returns:
-            str: Properly formatted docstring with quotes and indentation.
-        """
-        if not docstring:
-            return ""
-            
-        # Split into lines and add proper indentation
-        lines = docstring.split('\n')
-        indent = ' ' * indent_level
-        
-        # Format as triple-quoted docstring
-        formatted_lines = [f'{indent}"""']
-        
-        for line in lines:
-            if line.strip():
-                formatted_lines.append(f'{indent}{line}')
-            else:
-                formatted_lines.append('')
-        
-        formatted_lines.append(f'{indent}"""')
-        
-        return '\n'.join(formatted_lines)
