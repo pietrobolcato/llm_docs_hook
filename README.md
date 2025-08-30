@@ -53,17 +53,13 @@ Add to your `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
-  - repo: local
+  - repo: https://github.com/yourusername/llm-docs-hook
+    rev: v0.1.0  # Use the latest version
     hooks:
       - id: llm-docs-hook
-        name: Generate docstrings with LLM
-        entry: llm-docs-hook
-        language: python
-        files: \.py$
-        additional_dependencies: [llm-docs-hook]
 ```
 
-Or install the hook directly:
+Then install pre-commit:
 
 ```bash
 pre-commit install

@@ -368,24 +368,4 @@ class PythonASTParser:
             return ast.unparse(node.returns) if hasattr(ast, 'unparse') else str(node.returns)
         return None
 
-    def get_modified_elements(self, file_path: Union[str, Path], 
-                            modified_lines: Set[int]) -> List[CodeElement]:
-        """Get code elements that have been modified or are new.
 
-        Args:
-            file_path (Union[str, Path]): Path to the Python file.
-            modified_lines (Set[int]): Set of line numbers that have been modified.
-
-        Returns:
-            List[CodeElement]: List of modified code elements that need docstrings.
-        """
-        all_elements = self.parse_file(file_path)
-        modified_elements = []
-        
-        for element in all_elements:
-            # Check if any line of the element was modified
-            element_lines = set(range(element.line_number, element.end_line_number + 1))
-            if element_lines.intersection(modified_lines):
-                modified_elements.append(element)
-        
-        return modified_elements

@@ -5,4 +5,4 @@
   language: python
   files: \.py$
   require_serial: true
-  additional_dependencies: []
+  pass_filenames: true

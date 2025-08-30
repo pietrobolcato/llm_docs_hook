@@ -69,9 +69,9 @@ class DocstringProcessor:
                     modifications_made = True
                     
                     if self.config.processing.verbose:
-                        print(f"{action} docstring for {element.element_type} '{element.name}' in {file_path}")
+                        print(f"{action} docstring for {element.element_type.value} '{element.name}' in {file_path}")
                 else:
-                    print(f"Warning: Could not generate docstring for {element.element_type} '{element.name}' in {file_path}")
+                    print(f"Warning: Could not generate docstring for {element.element_type.value} '{element.name}' in {file_path}")
 
             # Write the modified content back if changes were made
             if modifications_made:
