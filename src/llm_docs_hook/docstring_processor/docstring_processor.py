@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 from src.llm_docs_hook.ast_parser.types import CodeElement
 from src.llm_docs_hook.config.types import Config
 from src.llm_docs_hook.llm_client.llm_client import LLMDocstringGenerator
+from .formatters import get_formatter
 
 
 class DocstringProcessor:
@@ -121,9 +122,10 @@ class DocstringProcessor:
             print(f"Warning: Could not find insertion point for {element.name}")
             return content
 
-        # Format the docstring with proper indentation
+        # Format the docstring with proper indentation and style
         indentation = self._get_indentation(lines, element)
-        formatted_docstring = self._format_docstring(docstring, indentation)
+        formatter = get_formatter(self.config.docstring.style)
+        formatted_docstring = formatter.format_docstring(docstring, indentation)
 
         # Insert the docstring
         lines.insert(insertion_line, formatted_docstring)
@@ -150,9 +152,10 @@ class DocstringProcessor:
             print(f"Warning: Could not find existing docstring for {element.name}")
             return content
 
-        # Format the new docstring with proper indentation
+        # Format the new docstring with proper indentation and style
         indentation = self._get_indentation(lines, element)
-        formatted_docstring = self._format_docstring(new_docstring, indentation)
+        formatter = get_formatter(self.config.docstring.style)
+        formatted_docstring = formatter.format_docstring(new_docstring, indentation)
 
         # Replace the existing docstring
         # Remove old docstring lines
@@ -239,51 +242,51 @@ class DocstringProcessor:
             definition_line = lines[definition_line_index]
             
             # Get base indentation from the definition line
-            base_indent = len(definition_line) - len(definition_line.lstrip())
+            base_indent_str = definition_line[:len(definition_line) - len(definition_line.lstrip())]
+            
+            # Detect the indentation style from the file
+            indent_unit = self._detect_indentation_style(lines)
             
             # Add one level of indentation for the docstring content
-            return ' ' * (base_indent + 4)
+            return base_indent_str + indent_unit
         
         return '    '  # Default 4-space indentation
 
-    def _format_docstring(self, docstring: str, indentation: str) -> str:
-        """Format a docstring with proper indentation and quotes.
+    def _detect_indentation_style(self, lines: List[str], depth: int = 50) -> str:
+        """Detect the indentation style used in the file.
 
         Args:
-            docstring (str): The raw docstring content.
-            indentation (str): The indentation string to use.
+            lines (List[str]): Lines of the file content.
+            depth (int): The number of lines to check for indentation style.
 
         Returns:
-            str: Properly formatted docstring with quotes and indentation.
+            str: The indentation unit (spaces or tab) used in the file.
         """
-        if not docstring:
-            return ""
+        # Check first few indented lines for pattern
+        for line in lines[:depth]:  # Only check first 50 lines for efficiency
+            if not line.strip():
+                continue
+                
+            # Get leading whitespace
+            leading = line[:len(line) - len(line.lstrip())]
+            if not leading:
+                continue
+                
+            # If tabs found, use tabs
+            if '\t' in leading:
+                return '\t'
+                
+            # If spaces found, detect common sizes (2, 4, 8)
+            if leading == '  ':  # 2 spaces
+                return '  '
+            elif leading == '    ':  # 4 spaces  
+                return '    '
+            elif leading == '        ':  # 8 spaces
+                return '        '
+            elif len(leading) % 2 == 0 and len(leading) <= 8:
+                return ' ' * len(leading)
         
-        # Split into lines for proper formatting
-        lines = docstring.split('\n')
-        
-        # Build the formatted docstring
-        formatted_lines = []
-        
-        # Opening triple quotes
-        formatted_lines.append(f'{indentation}"""{lines[0] if lines else ""}\n')
-        
-        # Middle lines (if any)
-        for line in lines[1:]:
-            if line.strip():
-                formatted_lines.append(f'{indentation}{line}\n')
-            else:
-                formatted_lines.append('\n')
-        
-        # Closing triple quotes (only if we have multiple lines)
-        if len(lines) > 1:
-            formatted_lines.append(f'{indentation}"""\n')
-        else:
-            # Single line docstring - close on the same line
-            if formatted_lines:
-                formatted_lines[0] = formatted_lines[0].rstrip('\n') + '"""\n'
-        
-        return ''.join(formatted_lines)
+        return '    '  # Default to 4 spaces
 
     def validate_insertion(self, file_path: Path) -> bool:
         """Validate that docstring insertions didn't break the Python syntax.
