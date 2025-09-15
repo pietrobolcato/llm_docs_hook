@@ -68,7 +68,6 @@ docstring:
 
 processing:
   parallel_count: 5
-  update_incomplete_docstrings: true
 ```
 
 ## Advanced Scenarios
@@ -138,7 +137,6 @@ processing:
   parallel_count: 3      # Conservative for rate limits
   backup_files: true     # Safety first
   verbose: true          # Detailed logging
-  update_incomplete_docstrings: true
 ```
 
 ## Provider-Specific Setup
@@ -327,7 +325,6 @@ llm:
 - Verify your Python files were valid before processing
 
 **"No docstrings generated"**
-- Verify functions don't already have docstrings (unless `update_incomplete_docstrings: true`)
 - Check file inclusion/exclusion patterns
 - Ensure files are valid Python syntax
 
@@ -395,4 +392,3 @@ if backup.exists():
 ### 5. Quality Control
 - Enable `verbose` mode during setup
 - Review a sample of generated docstrings
-- Use `update_incomplete_docstrings` to improve existing docs

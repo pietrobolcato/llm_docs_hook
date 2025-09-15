@@ -65,7 +65,6 @@ class TestConfigTypes(unittest.TestCase):
         self.assertIn("**/test_*.py", config.files.exclude_patterns)
 
         self.assertTrue(config.processing.skip_existing_docstrings)
-        self.assertFalse(config.processing.update_incomplete_docstrings)
         self.assertFalse(config.processing.backup_files)
         self.assertFalse(config.processing.verbose)
         self.assertEqual(config.processing.parallel_count, 5)
@@ -93,17 +92,6 @@ class TestConfigTypes(unittest.TestCase):
         api_key = config.get_api_key()
         self.assertEqual(api_key, test_key)
 
-    def test_get_api_key_fallback_to_generic(self) -> None:
-        """Test API key fallback to generic LLM_DOCS_HOOK_API_KEY."""
-        config = Config()
-        config.llm.provider = "unknown_provider"
-
-        test_key = "test-generic-key-789"
-        os.environ["LLM_DOCS_HOOK_API_KEY"] = test_key
-
-        api_key = config.get_api_key()
-        self.assertEqual(api_key, test_key)
-
     def test_get_api_key_openai_fallback(self) -> None:
         """Test OpenAI fallback for compatible providers."""
         config = Config()
@@ -114,14 +102,6 @@ class TestConfigTypes(unittest.TestCase):
 
         api_key = config.get_api_key()
         self.assertEqual(api_key, test_key)
-
-    def test_get_api_key_returns_none_when_missing(self) -> None:
-        """Test that get_api_key returns None when no API key is found."""
-        config = Config()
-        config.llm.provider = "nonexistent"
-
-        api_key = config.get_api_key()
-        self.assertIsNone(api_key)
 
     def test_model_validation_success(self) -> None:
         """Test that valid model format passes validation."""

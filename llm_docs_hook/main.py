@@ -38,7 +38,6 @@ def process_files(
         # Initialize components
         ast_parser = PythonASTParser(
             include_private=False,
-            update_incomplete=config.processing.update_incomplete_docstrings,
         )
         processor = DocstringProcessor(config)
 
@@ -63,7 +62,7 @@ def process_files(
                 elements_needing_docs = [
                     e
                     for e in elements
-                    if not e.has_docstring or e.is_incomplete_docstring
+                    if not e.has_docstring
                 ]
 
                 if elements_needing_docs:

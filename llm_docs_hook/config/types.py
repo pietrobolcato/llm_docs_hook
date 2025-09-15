@@ -95,9 +95,6 @@ class ProcessingConfig(BaseModel):
         default=True,
         description="Skip functions/classes that already have complete docstrings",
     )
-    update_incomplete_docstrings: bool = Field(
-        default=False, description="Update docstrings that lack Args/Returns sections"
-    )
     backup_files: bool = Field(
         default=False, description="Create backup files before modification"
     )

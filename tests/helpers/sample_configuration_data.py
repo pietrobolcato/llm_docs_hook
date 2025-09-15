@@ -16,7 +16,6 @@ SAMPLE_CONFIG_FULL = {
     },
     "processing": {
         "skip_existing_docstrings": False,
-        "update_incomplete_docstrings": True,
         "backup_files": True,
         "verbose": True,
         "parallel_count": 3,

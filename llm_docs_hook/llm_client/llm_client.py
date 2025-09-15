@@ -48,6 +48,7 @@ class LLMDocstringGenerator:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=self.config.llm.temperature,
                 max_tokens=self.config.llm.max_tokens,
+                api_key=self.api_key,
             )
 
             if response and response.choices and len(response.choices) > 0:
@@ -123,15 +124,53 @@ class LLMDocstringGenerator:
         # Check if we're updating an existing docstring
         if element.has_docstring and element.is_incomplete_docstring:
             task_description = f"Update and improve the existing docstring for the following Python {element.element_type}"
-            existing_note = "\nThe current docstring is incomplete and needs proper Args/Returns sections added."
+            existing_note = "\nThe current docstring is incomplete or incorrect. Fix sections so they match the signature exactly."
         else:
             task_description = f"Generate a {style}-style docstring for the following Python {element.element_type}"
             existing_note = ""
 
+        # Build strict requirements about parameters/returns to avoid churn
+        # Determine argument names excluding 'self'
+        arg_names = [arg for arg in (element.arguments or []) if arg != "self"]
+        has_params = len(arg_names) > 0
+
+        param_rules = []
+        if element.element_type.value == "function":
+            if has_params:
+                param_rules.append(
+                    f"Only include an Args section listing exactly these parameters, in order: {', '.join(arg_names)}."
+                )
+                param_rules.append(
+                    "Do not add, rename, or omit parameters. Use the exact parameter names from the signature."
+                )
+            else:
+                param_rules.append("Do not include an Args section (no parameters).")
+
+            if element.name == "__init__":
+                param_rules.append("Do not include a Returns section for __init__.")
+
+        # Class docstring rules
+        if element.element_type.value == "class":
+            param_rules.append(
+                "Do not include an Args section in the class docstring. Document attributes succinctly."
+            )
+            param_rules.append(
+                "Avoid a Methods section unless explicitly required by config; prefer concise class summary."
+            )
+
+        # Combine requirements
+        strict_requirements = "\n".join(param_rules)
+        if strict_requirements:
+            strict_requirements = (
+                f"\nStrict rules based on the signature:\n"
+                f"- Signature: {element.signature}\n"
+                f"{strict_requirements}"
+            )
+
         formatted_base_prompt = base_prompt.format(
             task_description=task_description,
             context=context,
-            existing_note=existing_note,
+            existing_note=existing_note + strict_requirements,
             requirements=self._get_requirements_text(
                 style, include_types, include_examples
             ),

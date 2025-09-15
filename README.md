@@ -51,14 +51,36 @@ This creates `.docstring_config.yaml` with default settings that you can customi
 
 ### 4. Set up pre-commit hook
 
-Add to your `.pre-commit-config.yaml`:
+Create a file: `.pre_commit_hooks/run_llm_docs_hook.sh`, with the following content:
+
+```bash
+#!/bin/bash
+set -e
+
+# Load .env file if it exists
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+    echo "Loaded .env file"
+fi
+
+# Run the actual hook
+exec llm-docs-hook "$@"
+```
+
+This will ensure that the enviornment variables for the LLMs are loaded correctly before running the hook.
+Then, add to your `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
   - repo: https://github.com/pbolcato/llm-docs-hook
-    rev: v0.1.0  # Use the latest version
+    rev: main
     hooks:
       - id: llm-docs-hook
+        name: llm-docs-hook
+        entry: bash .pre_commit_hooks/run_llm_docs_hook.sh
+        language: system
+        types: [python]
+        pass_filenames: true
 ```
 
 Then install pre-commit:

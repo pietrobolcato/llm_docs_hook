@@ -165,24 +165,6 @@ class TestPythonASTParser(unittest.TestCase):
         self.assertIn("method1", element_names)
         self.assertIn("method2", element_names)
 
-    def test_parse_incomplete_docstring(self) -> None:
-        """Test parsing a function with incomplete docstring."""
-        source_code = '''def incomplete_function(param1):
-    """This is incomplete."""
-    pass'''
-
-        parser = PythonASTParser(update_incomplete=True)
-
-        with patch("builtins.open", mock_open(read_data=source_code)):
-            with patch("pathlib.Path.exists", return_value=True):
-                elements = parser.parse_file("test.py")
-
-        # Should include functions with incomplete docstrings when configured
-        self.assertEqual(len(elements), 1)
-        element = elements[0]
-        self.assertTrue(element.has_docstring)
-        self.assertTrue(element.is_incomplete_docstring)
-
     def test_parse_async_function(self) -> None:
         """Test parsing an async function."""
         source_code = "async def async_function():\n    pass"

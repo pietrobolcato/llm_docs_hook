@@ -46,7 +46,6 @@ def create_mock_config(
     style: str = "google",
     backup_files: bool = False,
     verbose: bool = False,
-    update_incomplete: bool = False,
     parallel_count: int = 1,
 ) -> MagicMock:
     """Create a mock configuration object for testing.
@@ -57,7 +56,6 @@ def create_mock_config(
         style (str): Docstring style. Optional, defaults to "google".
         backup_files (bool): Whether to backup files. Optional, defaults to False.
         verbose (bool): Whether to enable verbose output. Optional, defaults to False.
-        update_incomplete (bool): Whether to update incomplete docstrings. Optional, defaults to False.
         parallel_count (int): Number of parallel requests. Optional, defaults to 1.
 
     Returns:
@@ -85,7 +83,6 @@ def create_mock_config(
     processing_mock = MagicMock()
     processing_mock.backup_files = backup_files
     processing_mock.verbose = verbose
-    processing_mock.update_incomplete_docstrings = update_incomplete
     processing_mock.parallel_count = parallel_count
     config.processing = processing_mock
 
