@@ -59,11 +59,7 @@ def process_files(
             try:
                 # Parse file for functions/classes needing docstrings
                 elements = ast_parser.parse_file(file_path)
-                elements_needing_docs = [
-                    e
-                    for e in elements
-                    if not e.has_docstring
-                ]
+                elements_needing_docs = [e for e in elements if not e.has_docstring]
 
                 if elements_needing_docs:
                     if verbose:
