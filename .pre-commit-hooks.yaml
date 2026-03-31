@@ -1,0 +1,8 @@
+- id: llm-docs-hook
+  name: Generate docstrings with LLM
+  description: Generate docstrings for Python functions and classes using LLM
+  entry: llm-docs-hook
+  language: python
+  files: \.py$
+  require_serial: true
+  pass_filenames: true

@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include env.example
+include .pre-commit-hooks.yaml
+recursive-include src/llm_docs_hook *.py
+recursive-include src/llm_docs_hook *.txt

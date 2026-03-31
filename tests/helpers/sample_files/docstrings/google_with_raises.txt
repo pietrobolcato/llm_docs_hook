@@ -1,0 +1,8 @@
+This function does something.
+
+Args:
+    param1: Description of param1.
+
+Raises:
+    ValueError: If param1 is invalid.
+    TypeError: If param1 is not a string.

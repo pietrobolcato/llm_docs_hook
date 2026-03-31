@@ -1,0 +1,37 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+## General
+
+- Use explicit naming for variables (eg: `index` instead of `i`, `source` instead of `src`, `image` instead of `img`, `directory` instead of `dir`)
+- Always use typing annotation
+- Always include complete docstrings, eg:
+    ```
+    """Initialize attributes of the model
+
+    Args:
+        model_name (str): The name of the model, to be loaded from Hugging Face
+        load_in_4bit (bool): Whether to load the model in 4-bit. Optional, defaults to True.
+        device_map (str): The device map to use for the model. Optional, defaults to "auto".
+        max_seq_length (int): The maximum sequence length to use for the model. Optional, defaults to 2048.
+    """
+    ```
+    When there's a default argument specifity it with `Optional, defaults to ...`
+
+- If possible try to always split a function logically in sub functions (where it makes sense), so that we keep complexity of functions < 10
+
+## Documentation
+- Use Google-style docstrings
+- Document all public APIs
+- Keep README.md updated
+- Use proper inline comments
+- Generate API documentation
+- Document environment setup
+
+---
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,9 @@
+This function does something.
+
+Args:
+    param1: Description of param1.
+    param2 (int): Description of param2.
+    param3 (str, optional): Description of param3.
+
+Returns:
+    bool: Description of return value.

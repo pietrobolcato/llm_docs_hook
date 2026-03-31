@@ -1,0 +1,13 @@
+This function does something.
+
+Parameters
+----------
+param1 : str
+    Description of param1.
+
+Raises
+------
+ValueError
+    If param1 is invalid.
+TypeError
+    If param1 is not a string.

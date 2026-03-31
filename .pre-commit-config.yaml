@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v5.0.0"
+    hooks:
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-json
+        exclude: ^.templates/cookiecutter.json
+      - id: check-yaml
+        exclude: '^\.templates/.*\.(yaml|yml)$'
+      - id: pretty-format-json
+        exclude: ^.templates/cookiecutter.json
+        args: [--autofix]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.6.3"
+    hooks:
+      - id: ruff
+        args: [--exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # - repo: local
+  #   hooks:
+  #     - id: llm-docs-hook
+  #       name: Generate docstrings with LLM
+  #       entry: .venv/bin/python -m llm_docs_hook.main
+  #       language: system
+  #       files: \.py$
+  #       require_serial: true
+  #       pass_filenames: true
